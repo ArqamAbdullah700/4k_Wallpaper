@@ -1,0 +1,25 @@
+<!-- res/layout/nav_header_main.xml -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="192dp"
+    android:background="?attr/colorPrimaryDark"
+    android:gravity="bottom"
+    android:orientation="vertical">
+
+    <ImageView
+        android:id="@+id/headerImageView"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/header_image" />
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="4K Wallpapers"
+        android:textSize="28sp"
+        android:textColor="@color/white"
+        android:layout_marginTop="-50dp"
+        android:layout_marginStart="20dp"/>
+</LinearLayout>

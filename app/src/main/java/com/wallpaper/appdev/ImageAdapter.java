@@ -93,7 +93,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
     public void addImages(List<ImageItem> newImageUrls) {
         // Add newly fetched images
         imageList.addAll(newImageUrls);
-        notifyDataSetChanged();
+
     }
     private int getImageRotation(String imageUrl) {
         try {

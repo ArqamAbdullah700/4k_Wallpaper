@@ -1,9 +1,13 @@
 package com.wallpaper.appdev;
 
+import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.Intent;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
+import android.widget.ProgressBar;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -32,6 +36,8 @@ public class MainActivity extends AppCompatActivity implements ImageFetcher.Imag
     ImageFetcher imageFetcher;
     private RecyclerView recyclerView;
     int pageIndex = 1;
+    private ProgressDialog progressDialog;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,11 +48,26 @@ public class MainActivity extends AppCompatActivity implements ImageFetcher.Imag
         imageList = new ArrayList<>();
         imageFetcher = new ImageFetcher(this);
 
+        showProgressDialog();
 
-        apiUrl = "https://api.unsplash.com/search/photos/?client_id=d3wrZOMtXmwkEv_oH1wF92WCxJf5ED3DY0fvPAAkd0U&page=10&query=office&per_page=30";
+        apiUrl = "https://api.unsplash.com/search/photos/?client_id=d3wrZOMtXmwkEv_oH1wF92WCxJf5ED3DY0fvPAAkd0U&page=01&query=4k wallpaper&per_page=30";
         imageFetcher.execute(apiUrl);
 
 
+
+    }
+    private void showProgressDialog() {
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setTitle("Please Wait...");
+        progressDialog.setMessage("while images are loading.");
+        progressDialog.show();
+
+    }
+
+    private void hideProgressDialog() {
+        if (progressDialog != null && progressDialog.isShowing()) {
+            progressDialog.dismiss();
+        }
     }
 
     private void setSideNavigationMenu() {
@@ -91,6 +112,8 @@ public class MainActivity extends AppCompatActivity implements ImageFetcher.Imag
 
     @Override
     public void onImageFetchComplete(ArrayList<String> imageUrls) {
+        pageIndex++;
+        imageList = new ArrayList<>();
         recyclerView = findViewById(R.id.recyclerView);
         gridLayoutManager = new GridLayoutManager(MainActivity.this, 2);
         //recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -98,9 +121,23 @@ public class MainActivity extends AppCompatActivity implements ImageFetcher.Imag
         for (String imageUrl : imageUrls) {
             imageList.add(new ImageItem("", imageUrl));
         }
-        imageAdapter = new ImageAdapter(this, imageList);
-        recyclerView.setAdapter(imageAdapter);
-        imageAdapter.notifyDataSetChanged();
+        if(pageIndex==2){
+            imageAdapter = new ImageAdapter(this, imageList);
+            recyclerView.setAdapter(imageAdapter);
+        } else {
+            imageAdapter.addImages(imageList);
+        }
+
+
+        Log.d("Arqam", "Index: " + pageIndex);
+        if(pageIndex<=10){
+            ImageFetcher imageFetcher1 = new ImageFetcher(this);
+            apiUrl = "https://api.unsplash.com/search/photos/?client_id=d3wrZOMtXmwkEv_oH1wF92WCxJf5ED3DY0fvPAAkd0U&page="+pageIndex+"&query=4k wallpaper&per_page=30";
+            imageFetcher1.execute(apiUrl);
+        } else {
+            hideProgressDialog();
+        }
+
     }
 
     @Override

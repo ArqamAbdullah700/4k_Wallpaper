@@ -46,45 +46,43 @@ public class ImageFetcher extends AsyncTask<String, Void, ArrayList<String>> {
         }
 
         String apiUrl = params[0];
-        for (int j = 1; j <= 5; j++) {
-            apiUrl = "https://api.unsplash.com/search/photos/?client_id=d3wrZOMtXmwkEv_oH1wF92WCxJf5ED3DY0fvPAAkd0U&page=" + j + "&query=office&per_page=30";
-
+//        for (int j = 1; j <= 50; j++) {
+//            apiUrl = "https://api.unsplash.com/search/photos/?client_id=d3wrZOMtXmwkEv_oH1wF92WCxJf5ED3DY0fvPAAkd0U&page=" + j + "&query=office&per_page=30";
+//
+//
+//        }
+        try {
+            URL url = new URL(apiUrl);
+            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
 
             try {
-                URL url = new URL(apiUrl);
-                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                InputStream inputStream = urlConnection.getInputStream();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
 
-                try {
-                    InputStream inputStream = urlConnection.getInputStream();
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-
-                    StringBuilder response = new StringBuilder();
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        response.append(line);
-                    }
-
-                    JSONObject jsonObjectNew = new JSONObject(response.toString());
-                    JSONArray jsonArrayNew = jsonObjectNew.getJSONArray("results");
-
-                    for (int i = 0; i < jsonArrayNew.length(); i++) {
-                        JSONObject jsonObject = jsonArrayNew.getJSONObject(i);
-                        JSONObject jsonUrlObject = jsonObject.getJSONObject("urls");
-                        String imageUrl = jsonUrlObject.getString("thumb");
-                        if (!imageUrl.isEmpty()) {
-                            imageUrls.add(imageUrl);
-                        }
-                        Log.d("Arqam", "Index: " + i);
-                    }
-
-                } finally {
-                    urlConnection.disconnect();
+                StringBuilder response = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    response.append(line);
                 }
-            } catch (IOException | JSONException e) {
-                Log.e(TAG, "Error fetching images", e);
-                return null;
-            }
 
+                JSONObject jsonObjectNew = new JSONObject(response.toString());
+                JSONArray jsonArrayNew = jsonObjectNew.getJSONArray("results");
+
+                for (int i = 0; i < jsonArrayNew.length(); i++) {
+                    JSONObject jsonObject = jsonArrayNew.getJSONObject(i);
+                    JSONObject jsonUrlObject = jsonObject.getJSONObject("urls");
+                    String imageUrl = jsonUrlObject.getString("small");
+                    if (!imageUrl.isEmpty()) {
+                        imageUrls.add(imageUrl);
+                    }
+                }
+
+            } finally {
+                urlConnection.disconnect();
+            }
+        } catch (IOException | JSONException e) {
+            Log.e(TAG, "Error fetching images", e);
+            return null;
         }
         return imageUrls;
     }

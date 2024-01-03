@@ -1,5 +1,6 @@
 package com.wallpaper.appdev;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.core.content.FileProvider;
@@ -15,12 +16,17 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
@@ -31,9 +37,11 @@ import java.io.IOException;
 public class ImageViewActivity extends AppCompatActivity {
     ImageView imageView, backImageBtn;
     ProgressBar progressBar;
-    FloatingActionButton share,fabFullScreen;
+    FloatingActionButton delete,share,fabFullScreen;
     CardView setAsWall;
     String imageUrl;
+    StorageReference storageReference;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,14 +49,27 @@ public class ImageViewActivity extends AppCompatActivity {
         imageView = findViewById(R.id.imageViewDetail);
         backImageBtn = findViewById(R.id.backImageBtn);
         progressBar = findViewById(R.id.progressBar);
+        delete = findViewById(R.id.fabDelete);
         share = findViewById(R.id.fabShare);
         fabFullScreen = findViewById(R.id.fabFullScreen);
         setAsWall = findViewById(R.id.setAsWallpaper);
         imageUrl = getIntent().getStringExtra("imageUrl");
+        FirebaseStorage storage = FirebaseStorage.getInstance();
+
         backImageBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 startActivity(new Intent(ImageViewActivity.this, MainActivity.class));
+            }
+        });
+        String imageName = extractImageName(imageUrl);
+        Log.e("Arqam",imageName);
+        storageReference = storage.getReference().child("4kWallpapers").child("Images").child(imageName);
+
+        delete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showDeleteConfirmationDialog();
             }
         });
 
@@ -90,7 +111,54 @@ public class ImageViewActivity extends AppCompatActivity {
                 });
 
     }
+    private void showDeleteConfirmationDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Confirm Delete");
+        builder.setMessage("Are you sure you want to delete this image?");
 
+        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                deleteImage();
+            }
+        });
+
+        builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+    private void deleteImage() {
+        storageReference.delete()
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        showToast("Image deleted successfully");
+                        finish();
+                        startActivity(new Intent(ImageViewActivity.this, MainActivity.class));
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception exception) {
+                        showToast("Error deleting image: " + exception.getMessage());
+                    }
+                });
+    }
+
+    private void showToast(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+
+    private String extractImageName(String url) {
+        String imageName = getImageNameFromUrl(url);
+        return imageName;
+    }
 
     private void setWallpaper() {
         WallpaperManager wallpaperManager = WallpaperManager.getInstance(this);
@@ -108,14 +176,7 @@ public class ImageViewActivity extends AppCompatActivity {
         }
     }
 
-    private void showToast(String message) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
-    }
 
-    private String extractImageName(String url) {
-        String imageName = getImageNameFromUrl(url);
-        return imageName;
-    }
     private void shareUnsplashImage() {
         try {
             imageView.setDrawingCacheEnabled(true);

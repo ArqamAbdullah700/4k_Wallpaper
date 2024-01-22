@@ -43,7 +43,6 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
         holder.imageNameTextView.setText(imageItem.getImageName());
 
         // Load the image into the ImageView using Glide
-        Log.d("ImageURL", imageItem.getImageUrl());
 
         holder.imageView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -76,7 +75,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
                 .into(holder.imageView, new Callback() {
                     @Override
                     public void onSuccess() {
-                        holder.progressBar.setVisibility(View.GONE); // Hide the progress bar on success
+                        holder.progressBar.setVisibility(View.GONE); // Hide the    progress bar on success
                     }
 
                     @Override

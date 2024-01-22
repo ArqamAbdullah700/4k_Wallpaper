@@ -128,8 +128,12 @@ public class ImageViewActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Void unused) {
             super.onPostExecute(unused);
-            startActivity(new Intent(ImageViewActivity.this, MainActivity.class));
-        }
+            overridePendingTransition(0, 0);
+            // startActivity(getIntent());
+            Intent intent = new Intent(ImageViewActivity.this, MainActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            overridePendingTransition(0, 0);        }
 
         @Override
         protected Void doInBackground(String... params) {
@@ -265,7 +269,7 @@ public class ImageViewActivity extends AppCompatActivity {
             shareIntent.setType("image/jpeg");
 
             // Add the image as an extra to the intent
-            String path = MediaStore.Images.Media.insertImage(getContentResolver(), bitmap, "4K_Wallpaper" + extractImageName(imageUrl), null);
+            String path = MediaStore.Images.Media.insertImage(getContentResolver(), bitmap, "4K_xWallpaper" + extractImageName(imageUrl), null);
             Uri imageUri = Uri.parse(path);
             shareIntent.putExtra(Intent.EXTRA_STREAM, imageUri);
 

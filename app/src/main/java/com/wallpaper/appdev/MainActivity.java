@@ -73,7 +73,7 @@ public class MainActivity extends AppCompatActivity  {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         setSideNavigationMenu();
-        CheckForAppUpdate();
+       // CheckForAppUpdate();
         urlsArray = new ArrayList<>();
         recyclerView = findViewById(R.id.recyclerView);
         imageList = new ArrayList<>();
@@ -134,8 +134,6 @@ public class MainActivity extends AppCompatActivity  {
                     for (int i = wallpapersArray.length() - 1; i >= 0; i--) {
                         String st = wallpapersArray.getJSONObject(i).getString("image_url");
                         urlsArray.add(st);
-                        Log.d("Test", st);
-
                         imageList.add(new ImageItem(st, st));
                     }
                 } else {

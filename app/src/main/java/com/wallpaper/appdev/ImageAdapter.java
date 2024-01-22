@@ -63,6 +63,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
                     // Example: Open a detail activity and pass the image URL
                     Intent intent = new Intent(context, ImageViewActivity.class);
                     intent.putExtra("imageUrl", clickedImage.getImageUrl());
+                    Log.d("Test" ,clickedImage.getImageUrl());
                     context.startActivity(intent);
                 }
             }

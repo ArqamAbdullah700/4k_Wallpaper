@@ -1,19 +1,13 @@
 package com.wallpaper.appdev;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.cardview.widget.CardView;
-import androidx.core.content.FileProvider;
-
 import android.app.AlertDialog;
 import android.app.WallpaperManager;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -21,6 +15,10 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -30,14 +28,27 @@ import com.google.firebase.storage.StorageReference;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
+import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 
 public class ImageViewActivity extends AppCompatActivity {
     ImageView imageView, backImageBtn;
     ProgressBar progressBar;
-    FloatingActionButton delete,share,fabFullScreen;
+    FloatingActionButton delete, share, fabFullScreen;
     CardView setAsWall;
     String imageUrl;
     StorageReference storageReference;
@@ -60,10 +71,11 @@ public class ImageViewActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 startActivity(new Intent(ImageViewActivity.this, MainActivity.class));
+                finish();
             }
         });
         String imageName = extractImageName(imageUrl);
-        Log.e("Arqam",imageName);
+        Log.e("Arqam", imageName);
         storageReference = storage.getReference().child("4kWallpapers").child("Images").child(imageName);
 
         delete.setOnClickListener(new View.OnClickListener() {
@@ -111,6 +123,115 @@ public class ImageViewActivity extends AppCompatActivity {
                 });
 
     }
+
+    private class DeleteImageTask extends AsyncTask<String, Void, Void> {
+        @Override
+        protected void onPostExecute(Void unused) {
+            super.onPostExecute(unused);
+            startActivity(new Intent(ImageViewActivity.this, MainActivity.class));
+        }
+
+        @Override
+        protected Void doInBackground(String... params) {
+            String apiEndpoint = params[0];
+            String srNo = params[1];
+            String imageUrl = params[2];
+
+            Log.d("Test", "API END Point:" + apiEndpoint);
+            Log.d("Test", "SR no: " + srNo);
+            Log.d("Test", "Image Url: " + imageUrl);
+
+            try {
+                // Create URL
+                URL url = new URL("https://www.gurbanistatus.in/Arqam/4K_Wallpaper/deleteWallpaper.php?sr_no=" + srNo + "&image_url=" + apiEndpoint);
+
+                // Create connection
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("POST");
+                connection.setDoOutput(true);
+
+                // Create request parameters
+                Map<String, String> parameters = new HashMap<>();
+                parameters.put("sr_no", srNo);
+                parameters.put("image_url", apiEndpoint);
+
+                // Write parameters to the connection
+                OutputStream os = connection.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
+                writer.write(getPostDataString(parameters));
+                writer.flush();
+                writer.close();
+                os.close();
+
+                // Get the response code
+                int responseCode = connection.getResponseCode();
+                Log.d("Test", "Response Code: " + responseCode);
+
+                // Read the response
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    InputStream is = connection.getInputStream();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+                    StringBuilder responseStringBuilder = new StringBuilder();
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        responseStringBuilder.append(line);
+                    }
+                    JSONObject jsonObject = new JSONObject(responseStringBuilder.toString());
+                    String response = jsonObject.getString("status");
+
+                    // Log the response
+                    Log.d("Test", "Response: " + response);
+
+                    // Check the response message and display a toast
+//                    JSONObject jsonResponse = new JSONObject(response);
+//                    String status = jsonResponse.getString("status");
+//                    String message = jsonResponse.getString("message");
+                    // Log.d("Test", "message: " + message);
+                    if ("success".equals(response)) {
+                        runOnUiThread(() -> Toast.makeText(ImageViewActivity.this, "Image deleted successfully: ", Toast.LENGTH_SHORT).show());
+                    } else {
+                        runOnUiThread(() -> Toast.makeText(ImageViewActivity.this, "Failed to delete image: ", Toast.LENGTH_SHORT).show());
+                    }
+                } else {
+                    // Log the error response
+                    InputStream errorStream = connection.getErrorStream();
+                    if (errorStream != null) {
+                        BufferedReader reader = new BufferedReader(new InputStreamReader(errorStream, "UTF-8"));
+                        StringBuilder errorStringBuilder = new StringBuilder();
+                        String line;
+                        while ((line = reader.readLine()) != null) {
+                            errorStringBuilder.append(line);
+                        }
+                        String errorResponse = errorStringBuilder.toString();
+                        Log.d("Test", "Error Response: " + errorResponse);
+                    }
+
+                    runOnUiThread(() -> Toast.makeText(ImageViewActivity.this, "Failed to delete image", Toast.LENGTH_SHORT).show());
+                }
+
+                // Disconnect
+                connection.disconnect();
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                runOnUiThread(() -> Toast.makeText(ImageViewActivity.this, "Error deleting image " + e.getMessage(), Toast.LENGTH_LONG).show());
+                Log.d("Test", "Error deleting image " + Objects.requireNonNull(e.getMessage()));
+            }
+
+            return null;
+        }
+
+
+    }
+
+    private String getPostDataString(Map<String, String> params) throws UnsupportedEncodingException {
+        Uri.Builder builder = new Uri.Builder();
+        for (Map.Entry<String, String> entry : params.entrySet()) {
+            builder.appendQueryParameter(entry.getKey(), entry.getValue());
+        }
+        return builder.build().getEncodedQuery();
+    }
+
     private void showDeleteConfirmationDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Confirm Delete");
@@ -119,7 +240,7 @@ public class ImageViewActivity extends AppCompatActivity {
         builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                deleteImage();
+                new DeleteImageTask().execute(imageUrl, "1", imageUrl.replace("https://www.gurbanistatus.in/Arqam/4K_Wallpaper/", ""));
             }
         });
 
@@ -133,6 +254,7 @@ public class ImageViewActivity extends AppCompatActivity {
         AlertDialog dialog = builder.create();
         dialog.show();
     }
+
     private void deleteImage() {
         storageReference.delete()
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -188,7 +310,7 @@ public class ImageViewActivity extends AppCompatActivity {
             shareIntent.setType("image/jpeg");
 
             // Add the image as an extra to the intent
-            String path = MediaStore.Images.Media.insertImage(getContentResolver(), bitmap, "IslamicWallpapers_"+extractImageName(imageUrl), null);
+            String path = MediaStore.Images.Media.insertImage(getContentResolver(), bitmap, "IslamicWallpapers_" + extractImageName(imageUrl), null);
             Uri imageUri = Uri.parse(path);
             shareIntent.putExtra(Intent.EXTRA_STREAM, imageUri);
 
@@ -215,7 +337,6 @@ public class ImageViewActivity extends AppCompatActivity {
         }
         return null;
     }
-
 
 
 }

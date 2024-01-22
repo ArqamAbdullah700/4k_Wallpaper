@@ -4,9 +4,12 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -35,6 +38,15 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.ListResult;
 import com.google.firebase.storage.StorageReference;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,12 +61,15 @@ public class MainActivity extends AppCompatActivity /*implements ImageFetcher.Im
     AppUpdateManager appUpdateManager;
     private static final int UPDATE_REQUEST_CODE = 2999;
 
-
+    ImageView addImageButton;
     String apiUrl;
     ImageFetcher imageFetcher;
     private RecyclerView recyclerView;
     int pageIndex = 1;
     private ProgressDialog progressDialog;
+
+    ArrayList<String> urlsArray;
+    String status;
 
 
     @Override
@@ -62,13 +77,21 @@ public class MainActivity extends AppCompatActivity /*implements ImageFetcher.Im
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         setSideNavigationMenu();
+        CheckForAppUpdate();
+        urlsArray = new ArrayList<>();
         recyclerView = findViewById(R.id.recyclerView);
         imageList = new ArrayList<>();
         //imageFetcher = new ImageFetcher(this);
 
         // showProgressDialog();
         gridLayoutManager = new GridLayoutManager(MainActivity.this, 3);
-
+        addImageButton = findViewById(R.id.addImageButton);
+        addImageButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(MainActivity.this, AddWallaperActivity.class));
+            }
+        });
 
         //recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setLayoutManager(gridLayoutManager);
@@ -77,8 +100,9 @@ public class MainActivity extends AppCompatActivity /*implements ImageFetcher.Im
 //        imageFetcher.execute(apiUrl);
         imageAdapter = new ImageAdapter(this, imageList);
         recyclerView.setAdapter(imageAdapter);
-        fetchImagesFromFirebase();
-        CheckForAppUpdate();
+        //  fetchImagesFromFirebase();
+        GetURLs gu = new GetURLs();
+        gu.execute("https://www.gurbanistatus.in/Arqam/4K_Wallpaper/getWallpaper.php");
 
     }
 
@@ -95,6 +119,65 @@ public class MainActivity extends AppCompatActivity /*implements ImageFetcher.Im
 //            progressDialog.dismiss();
 //        }
 //    }
+
+    class GetURLs extends AsyncTask<String, ArrayList<String>, String> {
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected String doInBackground(String... strings) {
+            BufferedReader bufferedReader = null;
+            StringBuilder sb = new StringBuilder();
+            URL url = null;
+            try {
+                url = new URL(strings[0]);
+                HttpURLConnection con = null;
+                con = (HttpURLConnection) url.openConnection();
+                bufferedReader = new BufferedReader(new InputStreamReader(con.getInputStream()));
+                String json;
+                while ((json = bufferedReader.readLine()) != null) {
+                    sb.append(json + "\n");
+                }
+
+
+                JSONObject jsonResponse = new JSONObject(sb.toString());
+                status = jsonResponse.getString("status");
+
+                if ("success".equals(status)) {
+
+                    JSONArray wallpapersArray = jsonResponse.getJSONArray("wallpapers");
+
+                    // Extract image URLs
+                    for (int i = wallpapersArray.length() - 1; i >= 0; i--) {
+                        String st = wallpapersArray.getJSONObject(i).getString("image_url");
+                        urlsArray.add(st);
+                        Log.d("Test", st);
+
+                        imageList.add(new ImageItem(st, st));
+                    }
+                } else {
+                    // Handle error
+                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "No wallpapers found", Toast.LENGTH_SHORT).show());
+                }
+
+
+            } catch (IOException | JSONException e) {
+                throw new RuntimeException(e);
+            }
+            return sb.toString().trim();
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+            imageAdapter.notifyDataSetChanged();
+
+        }
+    }
+
 
     private void setSideNavigationMenu() {
         drawerLayout = findViewById(R.id.my_drawer_layout);
@@ -125,7 +208,10 @@ public class MainActivity extends AppCompatActivity /*implements ImageFetcher.Im
                 } else if (itemId == R.id.islamicWallpaper) {
                     finish();
                     overridePendingTransition(0, 0);
-                    startActivity(getIntent());
+                    // startActivity(getIntent());
+                    Intent intent = new Intent(MainActivity.this, MainActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
                     overridePendingTransition(0, 0);
 
                 }

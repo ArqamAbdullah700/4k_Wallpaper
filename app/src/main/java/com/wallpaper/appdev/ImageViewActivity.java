@@ -16,12 +16,9 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -42,7 +39,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 
 public class ImageViewActivity extends AppCompatActivity {
@@ -50,7 +46,7 @@ public class ImageViewActivity extends AppCompatActivity {
     ProgressBar progressBar;
     FloatingActionButton delete, share, fabFullScreen;
     CardView setAsWall;
-    String imageUrl;
+    String imageUrl, imageThumbUrl;
     StorageReference storageReference;
 
     @Override
@@ -64,7 +60,8 @@ public class ImageViewActivity extends AppCompatActivity {
         share = findViewById(R.id.fabShare);
         fabFullScreen = findViewById(R.id.fabFullScreen);
         setAsWall = findViewById(R.id.setAsWallpaper);
-        imageUrl = getIntent().getStringExtra("imageUrl");
+        imageUrl = getIntent().getStringExtra("imageUrlOriginal");
+        imageThumbUrl = getIntent().getStringExtra("imageUrlThumb");
         FirebaseStorage storage = FirebaseStorage.getInstance();
 
         backImageBtn.setOnClickListener(new View.OnClickListener() {
@@ -133,7 +130,8 @@ public class ImageViewActivity extends AppCompatActivity {
             Intent intent = new Intent(ImageViewActivity.this, MainActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
-            overridePendingTransition(0, 0);        }
+            overridePendingTransition(0, 0);
+        }
 
         @Override
         protected Void doInBackground(String... params) {
@@ -216,7 +214,7 @@ public class ImageViewActivity extends AppCompatActivity {
         builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                new DeleteImageTask().execute(imageUrl, "1", imageUrl.replace("https://www.gurbanistatus.in/Arqam/4K_Wallpaper/", ""));
+                new DeleteImageTask().execute(imageUrl, imageThumbUrl.replace("https://www.gurbanistatus.in/Arqam/4K_Wallpaper/", ""), imageUrl.replace("https://www.gurbanistatus.in/Arqam/4K_Wallpaper/", ""));
             }
         });
 

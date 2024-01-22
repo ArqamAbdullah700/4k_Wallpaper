@@ -11,6 +11,10 @@ import retrofit2.http.Part;
 public interface ApiService {
 
     @Multipart
-    @POST("addWallpaper.php") // Change this to the endpoint of your PHP API
-    Call<JsonObject> uploadImage(@Part MultipartBody.Part image);
+    @POST("addWallpaper.php") // Adjust the endpoint accordingly
+    Call<JsonObject> uploadImages(
+            @Part MultipartBody.Part thumbnail,
+            @Part MultipartBody.Part original
+    );
+
 }

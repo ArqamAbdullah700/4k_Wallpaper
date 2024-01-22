@@ -1,9 +1,7 @@
 package com.wallpaper.appdev;
 
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.IntentSender;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -21,9 +19,6 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
@@ -34,9 +29,6 @@ import com.google.android.play.core.install.InstallStateUpdatedListener;
 import com.google.android.play.core.install.model.AppUpdateType;
 import com.google.android.play.core.install.model.InstallStatus;
 import com.google.android.play.core.install.model.UpdateAvailability;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.ListResult;
-import com.google.firebase.storage.StorageReference;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -50,7 +42,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity  {
+public class MainActivity extends AppCompatActivity {
     public DrawerLayout drawerLayout;
     public NavigationView navigationView;
     public ActionBarDrawerToggle actionBarDrawerToggle;
@@ -64,7 +56,7 @@ public class MainActivity extends AppCompatActivity  {
     ImageView addImageButton;
     private RecyclerView recyclerView;
 
-    ArrayList<String> urlsArray;
+    ArrayList<ImageHolder> urlsArray;
     String status;
 
 
@@ -73,7 +65,7 @@ public class MainActivity extends AppCompatActivity  {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         setSideNavigationMenu();
-       // CheckForAppUpdate();
+        // CheckForAppUpdate();
         urlsArray = new ArrayList<>();
         recyclerView = findViewById(R.id.recyclerView);
         imageList = new ArrayList<>();
@@ -97,7 +89,6 @@ public class MainActivity extends AppCompatActivity  {
         gu.execute("https://www.gurbanistatus.in/Arqam/4K_Wallpaper/getWallpaper.php");
 
     }
-
 
 
     class GetURLs extends AsyncTask<String, ArrayList<String>, String> {
@@ -127,17 +118,15 @@ public class MainActivity extends AppCompatActivity  {
                 status = jsonResponse.getString("status");
 
                 if ("success".equals(status)) {
-
                     JSONArray wallpapersArray = jsonResponse.getJSONArray("wallpapers");
-
                     // Extract image URLs
                     for (int i = wallpapersArray.length() - 1; i >= 0; i--) {
-                        String st = wallpapersArray.getJSONObject(i).getString("image_url");
-                        urlsArray.add(st);
-                        imageList.add(new ImageItem(st, st));
+                        String st = wallpapersArray.getJSONObject(i).getString("thumbnail_url");
+                        String originalUrlSt = wallpapersArray.getJSONObject(i).getString("original_url");
+                        urlsArray.add(new ImageHolder(st, originalUrlSt));
+                        imageList.add(new ImageItem(originalUrlSt, st));
                     }
                 } else {
-                    // Handle error
                     runOnUiThread(() -> Toast.makeText(MainActivity.this, "No wallpapers found", Toast.LENGTH_SHORT).show());
                 }
 
@@ -199,8 +188,6 @@ public class MainActivity extends AppCompatActivity  {
         });
 
     }
-
-
 
 
     private void CheckForAppUpdate() {

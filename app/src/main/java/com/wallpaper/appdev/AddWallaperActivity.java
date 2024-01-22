@@ -2,6 +2,7 @@ package com.wallpaper.appdev;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -22,7 +23,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.gson.JsonObject;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 
 import okhttp3.MediaType;
@@ -42,7 +46,7 @@ public class AddWallaperActivity extends AppCompatActivity {
     String[] cameraPermissions, storagePermissions;
 
     private static final int PICK_IMAGE_REQUEST = 1;
-    private Uri selectedImageUri;
+    private Uri selectedImageUri, originalImageUri;
 
 
     @Override
@@ -65,7 +69,7 @@ public class AddWallaperActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if (selectedImageUri != null) {
-                    uploadImage(selectedImageUri);
+                    uploadImage(selectedImageUri, originalImageUri);
                 } else {
                     Toast.makeText(AddWallaperActivity.this, "Please choose an image first", Toast.LENGTH_SHORT).show();
                 }
@@ -89,27 +93,77 @@ public class AddWallaperActivity extends AppCompatActivity {
             addImageTv.setVisibility(View.GONE);
             imagePreview.setVisibility(View.VISIBLE);
             imagePreview.setImageURI(data.getData());
-            selectedImageUri = data.getData();
+            // original uri
+            //  selectedImageUri = data.getData();
+            originalImageUri = data.getData();
+            InputStream inputStream = null;
+            try {
+                inputStream = AddWallaperActivity.this.getContentResolver().openInputStream(data.getData());
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+
+            // Decode the input stream into a Bitmap
+            Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+            Bitmap thumbnail = createThumbnail(bitmap);
+            //thumbnail uri
+            selectedImageUri = bitmapToUri(AddWallaperActivity.this, thumbnail);
+
+
         }
     }
 
-    private void uploadImage(Uri imageUri) {
-        new UploadImageTask().execute(imageUri);
+    public static Uri bitmapToUri(Context context, Bitmap bitmap) {
+        // Get the application's cache directory
+        File cacheDir = context.getExternalCacheDir();
+        File file = new File(cacheDir, "image.jpg");
+
+        try {
+            // Write the Bitmap to the file
+            FileOutputStream outputStream = new FileOutputStream(file);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
+            outputStream.flush();
+            outputStream.close();
+
+            // Return the Uri for the file
+            return Uri.fromFile(file);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 
-    private class UploadImageTask extends AsyncTask<Uri, Void, Void> {
+    private Bitmap createThumbnail(Bitmap originalBitmap) {
+        int thumbnailSize = 500; // Adjust as needed
+        return Bitmap.createScaledBitmap(originalBitmap, thumbnailSize, thumbnailSize, true);
+    }
+
+    private void uploadImage(Uri imageUri, Uri originalImageUri) {
+        Uri[] uris = new Uri[2];
+        uris[0] = imageUri;
+        uris[1] = originalImageUri;
+        new UploadImageTask().execute(uris);
+    }
+
+    private class UploadImageTask extends AsyncTask<Uri[], Void, Void> {
 
         @Override
-        protected Void doInBackground(Uri... uris) {
-            Uri imageUri = uris[0];
+        protected Void doInBackground(Uri[]... urisArray) {
+            Uri[] imageUris = urisArray[0];
 
             try {
-                InputStream inputStream = getContentResolver().openInputStream(imageUri);
-                Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+                // Convert the thumbnail image
+                Bitmap thumbnailBitmap = getBitmapFromUri(imageUris[0]);
+                ByteArrayOutputStream thumbnailByteArrayOutputStream = new ByteArrayOutputStream();
+                thumbnailBitmap.compress(Bitmap.CompressFormat.JPEG, 100, thumbnailByteArrayOutputStream);
+                byte[] thumbnailImageBytes = thumbnailByteArrayOutputStream.toByteArray();
 
-                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
-                byte[] imageBytes = byteArrayOutputStream.toByteArray();
+                // Convert the original image
+                Bitmap originalBitmap = getBitmapFromUri(imageUris[1]);
+                ByteArrayOutputStream originalByteArrayOutputStream = new ByteArrayOutputStream();
+                originalBitmap.compress(Bitmap.CompressFormat.JPEG, 100, originalByteArrayOutputStream);
+                byte[] originalImageBytes = originalByteArrayOutputStream.toByteArray();
 
                 // Retrofit setup
                 Retrofit retrofit = new Retrofit.Builder()
@@ -121,20 +175,23 @@ public class AddWallaperActivity extends AppCompatActivity {
                 ApiService apiService = retrofit.create(ApiService.class);
                 Log.d("UploadImageTask", "API URL: " + retrofit.baseUrl());
 
-                // Create a request body with the image bytes
-                RequestBody requestFile = RequestBody.create(MediaType.parse("image/jpeg"), imageBytes);
-                MultipartBody.Part body = MultipartBody.Part.createFormData("image", "image.jpg", requestFile);
+                // Create request bodies with the image bytes
+                RequestBody thumbnailRequestBody = RequestBody.create(MediaType.parse("image/jpeg"), thumbnailImageBytes);
+                MultipartBody.Part thumbnailBody = MultipartBody.Part.createFormData("thumbnail", "thumbnail.jpg", thumbnailRequestBody);
+
+                RequestBody originalRequestBody = RequestBody.create(MediaType.parse("image/jpeg"), originalImageBytes);
+                MultipartBody.Part originalBody = MultipartBody.Part.createFormData("original", "original.jpg", originalRequestBody);
 
                 // Make the API call
-                Call<JsonObject> call = apiService.uploadImage(body);
+                Call<JsonObject> call = apiService.uploadImages(thumbnailBody, originalBody);
                 call.enqueue(new Callback<JsonObject>() {
                     @Override
                     public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
                         if (response.isSuccessful()) {
-                            Toast.makeText(AddWallaperActivity.this, "Image uploaded successfully", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(AddWallaperActivity.this, "Images uploaded successfully", Toast.LENGTH_SHORT).show();
                             startActivity(new Intent(AddWallaperActivity.this, MainActivity.class));
                         } else {
-                            Toast.makeText(AddWallaperActivity.this, "Error uploading image", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(AddWallaperActivity.this, "Error uploading images", Toast.LENGTH_SHORT).show();
                             startActivity(new Intent(AddWallaperActivity.this, MainActivity.class));
                         }
                     }
@@ -142,7 +199,7 @@ public class AddWallaperActivity extends AppCompatActivity {
                     @Override
                     public void onFailure(Call<JsonObject> call, Throwable t) {
                         Log.e("UploadImageTask", "Failure: " + t.getMessage());
-                        Toast.makeText(AddWallaperActivity.this, "Failed to upload image", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(AddWallaperActivity.this, "Failed to upload images", Toast.LENGTH_SHORT).show();
                     }
                 });
 
@@ -151,6 +208,12 @@ public class AddWallaperActivity extends AppCompatActivity {
             }
             return null;
         }
+
+        private Bitmap getBitmapFromUri(Uri uri) throws FileNotFoundException {
+            InputStream inputStream = getContentResolver().openInputStream(uri);
+            return BitmapFactory.decodeStream(inputStream);
+        }
     }
+
 
 }

@@ -40,7 +40,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         ImageItem imageItem = imageList.get(position);
-        holder.imageNameTextView.setText(imageItem.getImageName());
+        holder.imageNameTextView.setText(imageItem.getImageOriginalUrl());
 
         // Load the image into the ImageView using Glide
 
@@ -61,8 +61,9 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
 
                     // Example: Open a detail activity and pass the image URL
                     Intent intent = new Intent(context, ImageViewActivity.class);
-                    intent.putExtra("imageUrl", clickedImage.getImageUrl());
-                    Log.d("Test" ,clickedImage.getImageUrl());
+                    intent.putExtra("imageUrlOriginal", clickedImage.getImageOriginalUrl());
+                    intent.putExtra("imageUrlThumb", clickedImage.getImageThumbUrl());
+                    Log.d("Test", clickedImage.getImageThumbUrl());
                     context.startActivity(intent);
                 }
             }
@@ -70,8 +71,8 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
 
 
         Picasso.get()
-                .load(imageItem.getImageUrl())
-                .rotate(getImageRotation(imageItem.getImageUrl()))
+                .load(imageItem.getImageThumbUrl())
+                .rotate(getImageRotation(imageItem.getImageThumbUrl()))
                 .into(holder.imageView, new Callback() {
                     @Override
                     public void onSuccess() {
@@ -90,11 +91,13 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
     public int getItemCount() {
         return imageList.size();
     }
+
     public void addImages(List<ImageItem> newImageUrls) {
         // Add newly fetched images
         imageList.addAll(newImageUrls);
 
     }
+
     private int getImageRotation(String imageUrl) {
         try {
             // Get the orientation of the image from its metadata

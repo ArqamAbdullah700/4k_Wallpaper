@@ -1,19 +1,19 @@
 package com.wallpaper.appdev;
 
 public class ImageItem {
-    private String imageName;
-    private String imageUrl;
+    private String imageOriginalUrl;
+    private String imageThumbUrl;
 
     public ImageItem(String imageName, String imageUrl) {
-        this.imageName = imageName;
-        this.imageUrl = imageUrl;
+        this.imageOriginalUrl = imageName;
+        this.imageThumbUrl = imageUrl;
     }
 
-    public String getImageName() {
-        return imageName;
+    public String getImageOriginalUrl() {
+        return imageOriginalUrl;
     }
 
-    public String getImageUrl() {
-        return imageUrl;
+    public String getImageThumbUrl() {
+        return imageThumbUrl;
     }
 }

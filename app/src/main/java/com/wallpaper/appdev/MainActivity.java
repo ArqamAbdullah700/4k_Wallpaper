@@ -50,7 +50,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity /*implements ImageFetcher.ImageFetchListener*/ {
+public class MainActivity extends AppCompatActivity  {
     public DrawerLayout drawerLayout;
     public NavigationView navigationView;
     public ActionBarDrawerToggle actionBarDrawerToggle;
@@ -62,11 +62,7 @@ public class MainActivity extends AppCompatActivity /*implements ImageFetcher.Im
     private static final int UPDATE_REQUEST_CODE = 2999;
 
     ImageView addImageButton;
-    String apiUrl;
-    ImageFetcher imageFetcher;
     private RecyclerView recyclerView;
-    int pageIndex = 1;
-    private ProgressDialog progressDialog;
 
     ArrayList<String> urlsArray;
     String status;
@@ -93,32 +89,16 @@ public class MainActivity extends AppCompatActivity /*implements ImageFetcher.Im
             }
         });
 
-        //recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setLayoutManager(gridLayoutManager);
 
-//        apiUrl = "https://api.unsplash.com/search/photos/?client_id=d3wrZOMtXmwkEv_oH1wF92WCxJf5ED3DY0fvPAAkd0U&page=01&query=4k wallpaper&per_page=30";
-//        imageFetcher.execute(apiUrl);
         imageAdapter = new ImageAdapter(this, imageList);
         recyclerView.setAdapter(imageAdapter);
-        //  fetchImagesFromFirebase();
         GetURLs gu = new GetURLs();
         gu.execute("https://www.gurbanistatus.in/Arqam/4K_Wallpaper/getWallpaper.php");
 
     }
 
-//    private void showProgressDialog() {
-//        progressDialog = new ProgressDialog(this);
-//        progressDialog.setTitle("Please Wait...");
-//        progressDialog.setMessage("while images are loading.");
-//        progressDialog.show();
-//
-//    }
-//
-//    private void hideProgressDialog() {
-//        if (progressDialog != null && progressDialog.isShowing()) {
-//            progressDialog.dismiss();
-//        }
-//    }
+
 
     class GetURLs extends AsyncTask<String, ArrayList<String>, String> {
 
@@ -223,63 +203,20 @@ public class MainActivity extends AppCompatActivity /*implements ImageFetcher.Im
     }
 
 
-    private void fetchImagesFromFirebase() {
-        FirebaseStorage storage = FirebaseStorage.getInstance();
-        StorageReference storageRef = storage.getReference().child("4kWallpapers").child("Images");
 
-        storageRef.listAll().addOnCompleteListener(new OnCompleteListener<ListResult>() {
-            @Override
-            public void onComplete(@NonNull Task<ListResult> task) {
-                if (task.isSuccessful()) {
-                    for (StorageReference item : task.getResult().getItems()) {
-                        String imageName = item.getName();
-
-                        // Use addOnSuccessListener to retrieve the download URL
-                        item.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                            @Override
-                            public void onSuccess(Uri uri) {
-                                String imageUrl = uri.toString();
-                                ImageItem imageItem = new ImageItem(imageName, imageUrl);
-                                imageList.add(imageItem);
-                                imageAdapter.notifyDataSetChanged();
-                            }
-                        }).addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                // Handle failure to get download URL
-                                Log.e("FetchImages", "Failed to get download URL: " + e.getMessage());
-                            }
-                        });
-                    }
-                } else {
-                    // Handle failure
-                    Log.e("FetchImages", "Failed to list items: " + task.getException().getMessage());
-                }
-            }
-        });
-    }
 
     private void CheckForAppUpdate() {
         Log.d("Arqam", "Check for update called");
         appUpdateManager = AppUpdateManagerFactory.create(this);
-        // Returns an intent object that you use to check for an update.
         Task<AppUpdateInfo> appUpdateInfoTask = appUpdateManager.getAppUpdateInfo();
-        // Checks that the platform will allow the specified type of update.
         appUpdateInfoTask.addOnSuccessListener(appUpdateInfo -> {
             if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE
-                    // This example applies an immediate update. To apply a flexible update
-                    // instead, pass in AppUpdateType.FLEXIBLE
                     && appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE)) {
-                // Request the update.
                 try {
                     appUpdateManager.startUpdateFlowForResult(
-                            // Pass the intent that is returned by 'getAppUpdateInfo()'.
                             appUpdateInfo,
-                            // Or 'AppUpdateType.FLEXIBLE' for flexible updates.
                             AppUpdateType.FLEXIBLE,
-                            // The current activity making the update request.
                             this,
-                            // Include a request code to later monitor this update request.
                             UPDATE_REQUEST_CODE);
                 } catch (IntentSender.SendIntentException e) {
                     throw new RuntimeException(e);
@@ -322,38 +259,5 @@ public class MainActivity extends AppCompatActivity /*implements ImageFetcher.Im
             }
         }
     }
-//    @Override
-//    public void onImageFetchComplete(ArrayList<String> imageUrls) {
-//        pageIndex++;
-//        imageList = new ArrayList<>();
-//        recyclerView = findViewById(R.id.recyclerView);
-//        gridLayoutManager = new GridLayoutManager(MainActivity.this, 2);
-//        //recyclerView.setLayoutManager(new LinearLayoutManager(this));
-//        recyclerView.setLayoutManager(gridLayoutManager);
-//        for (String imageUrl : imageUrls) {
-//            imageList.add(new ImageItem("", imageUrl));
-//        }
-//        if(pageIndex==2){
-//            imageAdapter = new ImageAdapter(this, imageList);
-//            recyclerView.setAdapter(imageAdapter);
-//        } else {
-//            imageAdapter.addImages(imageList);
-//        }
-//
-//
-//        Log.d("Arqam", "Index: " + pageIndex);
-//        if(pageIndex<=10){
-//            ImageFetcher imageFetcher1 = new ImageFetcher(this);
-//            apiUrl = "https://api.unsplash.com/search/photos/?client_id=d3wrZOMtXmwkEv_oH1wF92WCxJf5ED3DY0fvPAAkd0U&page="+pageIndex+"&query=4k wallpaper&per_page=30";
-//            imageFetcher1.execute(apiUrl);
-//        } else {
-//            hideProgressDialog();
-//        }
-//
-//    }
-//
-//    @Override
-//    public void onImageFetchError(String errorMessage) {
-//        Log.e("Image Fetch Error", errorMessage);
-//    }
+
 }

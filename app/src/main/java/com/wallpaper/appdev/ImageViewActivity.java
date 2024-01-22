@@ -163,11 +163,9 @@ public class ImageViewActivity extends AppCompatActivity {
                 writer.close();
                 os.close();
 
-                // Get the response code
                 int responseCode = connection.getResponseCode();
                 Log.d("Test", "Response Code: " + responseCode);
 
-                // Read the response
                 if (responseCode == HttpURLConnection.HTTP_OK) {
                     InputStream is = connection.getInputStream();
                     BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
@@ -179,43 +177,17 @@ public class ImageViewActivity extends AppCompatActivity {
                     JSONObject jsonObject = new JSONObject(responseStringBuilder.toString());
                     String response = jsonObject.getString("status");
 
-                    // Log the response
-                    Log.d("Test", "Response: " + response);
-
-                    // Check the response message and display a toast
-//                    JSONObject jsonResponse = new JSONObject(response);
-//                    String status = jsonResponse.getString("status");
-//                    String message = jsonResponse.getString("message");
-                    // Log.d("Test", "message: " + message);
                     if ("success".equals(response)) {
-                        runOnUiThread(() -> Toast.makeText(ImageViewActivity.this, "Image deleted successfully: ", Toast.LENGTH_SHORT).show());
+                        runOnUiThread(() -> Toast.makeText(ImageViewActivity.this, "Image deleted successfully", Toast.LENGTH_SHORT).show());
                     } else {
-                        runOnUiThread(() -> Toast.makeText(ImageViewActivity.this, "Failed to delete image: ", Toast.LENGTH_SHORT).show());
+                        runOnUiThread(() -> Toast.makeText(ImageViewActivity.this, "Failed to delete image", Toast.LENGTH_SHORT).show());
                     }
-                } else {
-                    // Log the error response
-                    InputStream errorStream = connection.getErrorStream();
-                    if (errorStream != null) {
-                        BufferedReader reader = new BufferedReader(new InputStreamReader(errorStream, "UTF-8"));
-                        StringBuilder errorStringBuilder = new StringBuilder();
-                        String line;
-                        while ((line = reader.readLine()) != null) {
-                            errorStringBuilder.append(line);
-                        }
-                        String errorResponse = errorStringBuilder.toString();
-                        Log.d("Test", "Error Response: " + errorResponse);
-                    }
-
-                    runOnUiThread(() -> Toast.makeText(ImageViewActivity.this, "Failed to delete image", Toast.LENGTH_SHORT).show());
                 }
 
-                // Disconnect
                 connection.disconnect();
 
             } catch (Exception e) {
                 e.printStackTrace();
-                runOnUiThread(() -> Toast.makeText(ImageViewActivity.this, "Error deleting image " + e.getMessage(), Toast.LENGTH_LONG).show());
-                Log.d("Test", "Error deleting image " + Objects.requireNonNull(e.getMessage()));
             }
 
             return null;
@@ -255,23 +227,6 @@ public class ImageViewActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    private void deleteImage() {
-        storageReference.delete()
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        showToast("Image deleted successfully");
-                        finish();
-                        startActivity(new Intent(ImageViewActivity.this, MainActivity.class));
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception exception) {
-                        showToast("Error deleting image: " + exception.getMessage());
-                    }
-                });
-    }
 
     private void showToast(String message) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
@@ -310,7 +265,7 @@ public class ImageViewActivity extends AppCompatActivity {
             shareIntent.setType("image/jpeg");
 
             // Add the image as an extra to the intent
-            String path = MediaStore.Images.Media.insertImage(getContentResolver(), bitmap, "IslamicWallpapers_" + extractImageName(imageUrl), null);
+            String path = MediaStore.Images.Media.insertImage(getContentResolver(), bitmap, "4K_Wallpaper" + extractImageName(imageUrl), null);
             Uri imageUri = Uri.parse(path);
             shareIntent.putExtra(Intent.EXTRA_STREAM, imageUri);
 

@@ -40,8 +40,6 @@ public class AddWallaperActivity extends AppCompatActivity {
     ImageView imagePreview;
     Button uploadImageBtn;
     String[] cameraPermissions, storagePermissions;
-    final int CAMERA_REQUEST_CODE = 100;
-    final int STORAGE_REQUEST_CODE = 200;
 
     private static final int PICK_IMAGE_REQUEST = 1;
     private Uri selectedImageUri;

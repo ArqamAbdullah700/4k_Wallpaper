@@ -2,6 +2,7 @@ package com.wallpaper.appdev;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -12,14 +13,18 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.material.chip.Chip;
 import com.google.gson.JsonObject;
 
 import java.io.ByteArrayOutputStream;
@@ -43,21 +48,45 @@ public class AddWallaperActivity extends AppCompatActivity {
     TextView addImageTv;
     ImageView imagePreview;
     Button uploadImageBtn;
+    String category;
     String[] cameraPermissions, storagePermissions;
 
     private static final int PICK_IMAGE_REQUEST = 1;
     private Uri selectedImageUri, originalImageUri;
+    private ProgressDialog progressDialog;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_wallaper);
-        addImageTv = findViewById(R.id.addImageTv);
-        imagePreview = findViewById(R.id.imagePreview);
-        uploadImageBtn = findViewById(R.id.uploadImageButton);
-        cameraPermissions = new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE};
-        storagePermissions = new String[]{Manifest.permission.READ_EXTERNAL_STORAGE};
+        findViews();
+        Spinner spinner = findViewById(R.id.spinner);
+
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
+                this,
+                R.array.Categories,
+                android.R.layout.simple_spinner_item
+        );
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+        // Apply the adapter to the spinner
+        spinner.setAdapter(adapter);
+
+        // Set an item selection listener to handle selections
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
+                // Handle the selected item
+                category = (String) parentView.getItemAtPosition(position);
+                Toast.makeText(AddWallaperActivity.this, "Selected: " + category, Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parentView) {
+                // Do nothing here if nothing is selected
+            }
+        });
 
         addImageTv.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -75,6 +104,17 @@ public class AddWallaperActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    private void findViews() {
+        addImageTv = findViewById(R.id.addImageTv);
+        imagePreview = findViewById(R.id.imagePreview);
+        uploadImageBtn = findViewById(R.id.uploadImageButton);
+        cameraPermissions = new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE};
+        storagePermissions = new String[]{Manifest.permission.READ_EXTERNAL_STORAGE};
+
+
+
     }
 
     private void pickImageFromGallery() {
@@ -147,6 +187,20 @@ public class AddWallaperActivity extends AppCompatActivity {
     }
 
     private class UploadImageTask extends AsyncTask<Uri[], Void, Void> {
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            progressDialog = new ProgressDialog(AddWallaperActivity.this);
+            progressDialog.setMessage("Uploading Image...");
+            progressDialog.setCancelable(false);
+            progressDialog.show();
+        }
+
+        @Override
+        protected void onPostExecute(Void unused) {
+            super.onPostExecute(unused);
+            progressDialog.dismiss();
+        }
 
         @Override
         protected Void doInBackground(Uri[]... urisArray) {
@@ -165,6 +219,8 @@ public class AddWallaperActivity extends AppCompatActivity {
                 originalBitmap.compress(Bitmap.CompressFormat.JPEG, 100, originalByteArrayOutputStream);
                 byte[] originalImageBytes = originalByteArrayOutputStream.toByteArray();
 
+                // Get category from wherever you have it in your code
+
                 // Retrofit setup
                 Retrofit retrofit = new Retrofit.Builder()
                         .baseUrl("https://www.gurbanistatus.in/Arqam/4K_Wallpaper/") // Change this to the URL of your PHP API
@@ -182,8 +238,11 @@ public class AddWallaperActivity extends AppCompatActivity {
                 RequestBody originalRequestBody = RequestBody.create(MediaType.parse("image/jpeg"), originalImageBytes);
                 MultipartBody.Part originalBody = MultipartBody.Part.createFormData("original", "original.jpg", originalRequestBody);
 
+                // Create request body for category
+                RequestBody categoryRequestBody = RequestBody.create(MediaType.parse("text/plain"), category);
+
                 // Make the API call
-                Call<JsonObject> call = apiService.uploadImages(thumbnailBody, originalBody);
+                Call<JsonObject> call = apiService.uploadImages(thumbnailBody, originalBody, categoryRequestBody);
                 call.enqueue(new Callback<JsonObject>() {
                     @Override
                     public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
@@ -208,6 +267,7 @@ public class AddWallaperActivity extends AppCompatActivity {
             }
             return null;
         }
+
 
         private Bitmap getBitmapFromUri(Uri uri) throws FileNotFoundException {
             InputStream inputStream = getContentResolver().openInputStream(uri);

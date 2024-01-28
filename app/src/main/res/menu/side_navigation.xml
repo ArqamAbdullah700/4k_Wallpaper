@@ -16,4 +16,85 @@
         android:id="@+id/about"
         android:icon="@drawable/about"
         android:title="About" />
+
+    <group
+        android:id="@+id/group2"
+        android:checkableBehavior="single">
+        <item
+            android:id="@+id/subtitle"
+            android:title="">
+            <menu>
+                <item
+                    android:id="@+id/allCategory"
+                    android:title="All Categories" />
+                <item
+                    android:id="@+id/threeD"
+                    android:title="3D" />
+                <item
+                    android:id="@+id/abstrct"
+                    android:title="Abstract" />
+                <item
+                    android:id="@+id/animals"
+                    android:title="Animals" />
+                <item
+                    android:id="@+id/anime"
+                    android:title="Anime" />
+                <item
+                    android:id="@+id/art"
+                    android:title="Art" />
+                <item
+                    android:id="@+id/black"
+                    android:title="Black" />
+                <item
+                    android:id="@+id/blackAndWhite"
+                    android:title="Black and White" />
+                <item
+                    android:id="@+id/cars"
+                    android:title="Cars" />
+                <item
+                    android:id="@+id/city"
+                    android:title="City" />
+                <item
+                    android:id="@+id/dark"
+                    android:title="Dark" />
+                <item
+                    android:id="@+id/flowers"
+                    android:title="Flowers" />
+                <item
+                    android:id="@+id/food"
+                    android:title="Food" />
+                <item
+                    android:id="@+id/love"
+                    android:title="Love" />
+                <item
+                    android:id="@+id/men"
+                    android:title="Men" />
+                <item
+                    android:id="@+id/minimalism"
+                    android:title="Minimalism" />
+                <item
+                    android:id="@+id/motercycles"
+                    android:title="Motorcycles" />
+                <item
+                    android:id="@+id/nature"
+                    android:title="Nature" />
+                <item
+                    android:id="@+id/space"
+                    android:title="Space" />
+                <item
+                    android:id="@+id/sport"
+                    android:title="Sport" />
+                <item
+                    android:id="@+id/technologies"
+                    android:title="Technologies" />
+                <item
+                    android:id="@+id/textures"
+                    android:title="Textures" />
+                <item
+                    android:id="@+id/words"
+                    android:title="Words" />
+
+            </menu>
+        </item>
+    </group>
 </menu>

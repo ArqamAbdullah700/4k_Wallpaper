@@ -63,6 +63,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
                     Intent intent = new Intent(context, ImageViewActivity.class);
                     intent.putExtra("imageUrlOriginal", clickedImage.getImageOriginalUrl());
                     intent.putExtra("imageUrlThumb", clickedImage.getImageThumbUrl());
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     Log.d("Test", clickedImage.getImageThumbUrl());
                     context.startActivity(intent);
                 }

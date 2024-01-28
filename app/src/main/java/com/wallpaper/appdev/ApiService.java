@@ -3,6 +3,7 @@ package com.wallpaper.appdev;
 import com.google.gson.JsonObject;
 
 import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.http.Multipart;
 import retrofit2.http.POST;
@@ -14,7 +15,8 @@ public interface ApiService {
     @POST("addWallpaper.php") // Adjust the endpoint accordingly
     Call<JsonObject> uploadImages(
             @Part MultipartBody.Part thumbnail,
-            @Part MultipartBody.Part original
+            @Part MultipartBody.Part original,
+            @Part("category") RequestBody category
     );
 
 }

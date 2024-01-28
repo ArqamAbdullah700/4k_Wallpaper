@@ -1,5 +1,6 @@
 package com.wallpaper.appdev;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.os.AsyncTask;
@@ -20,6 +21,8 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.play.core.appupdate.AppUpdateInfo;
@@ -59,17 +62,53 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<ImageHolder> urlsArray;
     String status;
 
+    Chip AllCategory, ThreeD, Abstract, Animals, Anime, Art, Black, BlackAndWhite, Cars, City, Dark, Flowers, Food, Love, Men, Minimalism, Motorcycles, Nature, Space, Sport, Technologies, Textures, Words;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         setSideNavigationMenu();
-        // CheckForAppUpdate();
+        findViews();
+         CheckForAppUpdate();
         urlsArray = new ArrayList<>();
         recyclerView = findViewById(R.id.recyclerView);
         imageList = new ArrayList<>();
         //imageFetcher = new ImageFetcher(this);
+
+        ChipGroup chipGroup = findViewById(R.id.chipGroup);
+
+        chipGroup.setOnCheckedChangeListener(new ChipGroup.OnCheckedChangeListener() {
+            @SuppressLint("NotifyDataSetChanged")
+            @Override
+            public void onCheckedChanged(ChipGroup group, int checkedId) {
+                // Iterate through all chips in the ChipGroup
+                for (int i = 0; i < group.getChildCount(); i++) {
+                    Chip chip = (Chip) group.getChildAt(i);
+
+                    // Check if the current chip is selected
+                    if (chip.isChecked()) {
+                        // Do something with the selected chip
+                        String selectedChipText = chip.getText().toString();
+                        // Add your logic to handle the selected chip
+                        System.out.println("Selected Chip: " + selectedChipText);
+                        imageList = new ArrayList<>();
+                        recyclerView.setLayoutManager(gridLayoutManager);
+                        imageAdapter = new ImageAdapter(getApplicationContext(), imageList);
+                        recyclerView.setAdapter(imageAdapter);
+                        imageAdapter.notifyDataSetChanged();
+                        GetURLs gu = new GetURLs();
+                        if (selectedChipText.equals("All Categories")) {
+                            gu.execute("https://www.gurbanistatus.in/Arqam/4K_Wallpaper/getWallpaper.php");
+                        } else {
+                            gu.execute("https://www.gurbanistatus.in/Arqam/4K_Wallpaper/getWallpaperCategoryWise.php?category=" + selectedChipText);
+                        }
+
+                    }
+                }
+            }
+        });
 
         // showProgressDialog();
         gridLayoutManager = new GridLayoutManager(MainActivity.this, 3);
@@ -82,7 +121,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
         recyclerView.setLayoutManager(gridLayoutManager);
-
         imageAdapter = new ImageAdapter(this, imageList);
         recyclerView.setAdapter(imageAdapter);
         GetURLs gu = new GetURLs();
@@ -90,6 +128,32 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    public void findViews() {
+        AllCategory = findViewById(R.id.chip_allCat);
+        ThreeD = findViewById(R.id.chip_3D);
+        Abstract = findViewById(R.id.chip_Abstract);
+        Animals = findViewById(R.id.chip_Animals);
+        Anime = findViewById(R.id.chip_Anime);
+        Art = findViewById(R.id.chip_Art);
+        Black = findViewById(R.id.chip_Black);
+        BlackAndWhite = findViewById(R.id.chip_BlackAndWhite);
+        Cars = findViewById(R.id.chip_Cars);
+        City = findViewById(R.id.chip_City);
+        Dark = findViewById(R.id.chip_Dark);
+        Flowers = findViewById(R.id.chip_Flowers);
+        Food = findViewById(R.id.chip_Food);
+        Love = findViewById(R.id.chip_Love);
+        Men = findViewById(R.id.chip_Men);
+        Minimalism = findViewById(R.id.chip_Minimalism);
+        Motorcycles = findViewById(R.id.chip_Motorcycles);
+        Nature = findViewById(R.id.chip_Nature);
+        Space = findViewById(R.id.chip_Space);
+        Sport = findViewById(R.id.chip_Sport);
+        Technologies = findViewById(R.id.chip_Technologies);
+        Textures = findViewById(R.id.chip_Textures);
+        Words = findViewById(R.id.chip_Words);
+
+    }
 
     class GetURLs extends AsyncTask<String, ArrayList<String>, String> {
 
@@ -145,7 +209,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
     private void setSideNavigationMenu() {
         drawerLayout = findViewById(R.id.my_drawer_layout);
         toolbar = findViewById(R.id.my_toolbar);
@@ -181,14 +244,58 @@ public class MainActivity extends AppCompatActivity {
                     startActivity(intent);
                     overridePendingTransition(0, 0);
 
+                } else if (itemId == R.id.allCategory) {
+                    AllCategory.setChecked(true);
+                } else if (itemId == R.id.threeD) {
+                    ThreeD.setChecked(true);
+                } else if (itemId == R.id.abstrct) {
+                    Abstract.setChecked(true);
+                } else if (itemId == R.id.animals) {
+                    Animals.setChecked(true);
+                } else if (itemId == R.id.anime) {
+                    Anime.setChecked(true);
+                } else if (itemId == R.id.art) {
+                    Art.setChecked(true);
+                } else if (itemId == R.id.black) {
+                    Black.setChecked(true);
+                } else if (itemId == R.id.blackAndWhite) {
+                    BlackAndWhite.setChecked(true);
+                } else if (itemId == R.id.cars) {
+                    Cars.setChecked(true);
+                } else if (itemId == R.id.city) {
+                    City.setChecked(true);
+                } else if (itemId == R.id.dark) {
+                    Dark.setChecked(true);
+                } else if (itemId == R.id.flowers) {
+                    Flowers.setChecked(true);
+                } else if (itemId == R.id.food) {
+                    Food.setChecked(true);
+                } else if (itemId == R.id.love) {
+                    Love.setChecked(true);
+                } else if (itemId == R.id.men) {
+                    Men.setChecked(true);
+                } else if (itemId == R.id.minimalism) {
+                    Minimalism.setChecked(true);
+                } else if (itemId == R.id.motercycles) {
+                    Motorcycles.setChecked(true);
+                } else if (itemId == R.id.nature) {
+                    Nature.setChecked(true);
+                } else if (itemId == R.id.space) {
+                    Space.setChecked(true);
+                } else if (itemId == R.id.sport) {
+                    Sport.setChecked(true);
+                } else if (itemId == R.id.technologies) {
+                    Technologies.setChecked(true);
+                } else if (itemId == R.id.textures) {
+                    Textures.setChecked(true);
+                } else if (itemId == R.id.words) {
+                    Words.setChecked(true);
                 }
                 drawerLayout.closeDrawer(GravityCompat.START);
                 return true;
             }
         });
-
     }
-
 
     private void CheckForAppUpdate() {
         Log.d("Arqam", "Check for update called");
@@ -218,7 +325,6 @@ public class MainActivity extends AppCompatActivity {
             // and request user confirmation to restart the app.
             popupSnackbarForCompleteUpdate();
         }
-
     };
 
     private void popupSnackbarForCompleteUpdate() {

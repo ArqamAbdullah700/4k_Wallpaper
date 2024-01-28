@@ -7,8 +7,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -43,6 +41,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -56,7 +55,6 @@ public class MainActivity extends AppCompatActivity {
     AppUpdateManager appUpdateManager;
     private static final int UPDATE_REQUEST_CODE = 2999;
 
-    ImageView addImageButton;
     private RecyclerView recyclerView;
 
     ArrayList<ImageHolder> urlsArray;
@@ -71,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         setSideNavigationMenu();
         findViews();
-         CheckForAppUpdate();
+        CheckForAppUpdate();
         urlsArray = new ArrayList<>();
         recyclerView = findViewById(R.id.recyclerView);
         imageList = new ArrayList<>();
@@ -112,14 +110,6 @@ public class MainActivity extends AppCompatActivity {
 
         // showProgressDialog();
         gridLayoutManager = new GridLayoutManager(MainActivity.this, 3);
-        addImageButton = findViewById(R.id.addImageButton);
-        addImageButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startActivity(new Intent(MainActivity.this, AddWallaperActivity.class));
-            }
-        });
-
         recyclerView.setLayoutManager(gridLayoutManager);
         imageAdapter = new ImageAdapter(this, imageList);
         recyclerView.setAdapter(imageAdapter);
@@ -193,7 +183,7 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     runOnUiThread(() -> Toast.makeText(MainActivity.this, "No wallpapers found", Toast.LENGTH_SHORT).show());
                 }
-
+                Collections.shuffle(imageList);
 
             } catch (IOException | JSONException e) {
                 throw new RuntimeException(e);

@@ -44,7 +44,7 @@ import java.util.Map;
 public class ImageViewActivity extends AppCompatActivity {
     ImageView imageView, backImageBtn;
     ProgressBar progressBar;
-    FloatingActionButton delete, share, fabFullScreen;
+    FloatingActionButton share, fabFullScreen;
     CardView setAsWall;
     String imageUrl, imageThumbUrl;
     StorageReference storageReference;
@@ -56,7 +56,6 @@ public class ImageViewActivity extends AppCompatActivity {
         imageView = findViewById(R.id.imageViewDetail);
         backImageBtn = findViewById(R.id.backImageBtn);
         progressBar = findViewById(R.id.progressBar);
-        delete = findViewById(R.id.fabDelete);
         share = findViewById(R.id.fabShare);
         fabFullScreen = findViewById(R.id.fabFullScreen);
         setAsWall = findViewById(R.id.setAsWallpaper);
@@ -74,13 +73,6 @@ public class ImageViewActivity extends AppCompatActivity {
         String imageName = extractImageName(imageUrl);
         Log.e("Arqam", imageName);
         storageReference = storage.getReference().child("4kWallpapers").child("Images").child(imageName);
-
-        delete.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                showDeleteConfirmationDialog();
-            }
-        });
 
         share.setOnClickListener(new View.OnClickListener() {
             @Override

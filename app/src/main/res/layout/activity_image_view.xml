@@ -61,32 +61,19 @@
 
         </androidx.cardview.widget.CardView>
 
+
         <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fabDelete"
+            android:id="@+id/fabFullScreen"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
             android:layout_gravity="end"
             android:layout_marginTop="450dp"
             android:layout_marginEnd="20dp"
-            android:visibility="visible"
-            app:backgroundTint="#DADADA"
+            app:backgroundTint="@color/white"
             app:layout_anchorGravity="bottom|end"
-            app:srcCompat="@drawable/delete" />
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fabFullScreen"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/fabDelete"
-            android:layout_alignParentEnd="true"
-            android:layout_gravity="end"
-            android:layout_marginEnd="20dp"
-            android:layout_marginTop="20dp"
-            app:backgroundTint="#DADADA"
-            app:itemIconTint="@color/black"
-            app:layout_anchorGravity="bottom|end"
-            app:srcCompat="@drawable/fullscreen" />
+            app:srcCompat="@drawable/fullscreen"
+            app:tint="@color/black" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fabShare"
@@ -97,10 +84,10 @@
             android:layout_gravity="end"
             android:layout_marginTop="15dp"
             android:layout_marginEnd="20dp"
-            app:backgroundTint="#DADADA"
-            app:itemIconTint="@color/black"
+            app:backgroundTint="@color/white"
             app:layout_anchorGravity="bottom|end"
-            app:srcCompat="@drawable/share" />
+            app:srcCompat="@drawable/share"
+            app:tint="@color/black" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -116,6 +103,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
+                android:elevation="10dp"
                 app:cardCornerRadius="15dp">
 
                 <LinearLayout
@@ -123,6 +111,8 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
                     android:background="#DADADA"
+                    android:backgroundTint="@color/white"
+
                     android:orientation="horizontal">
 
                     <TextView
@@ -132,6 +122,7 @@
                         android:layout_margin="10dp"
                         android:layout_marginEnd="15dp"
                         android:text="Set as Wallpaper"
+                        android:textColor="@color/black"
                         android:textSize="17sp" />
 
                     <ImageView

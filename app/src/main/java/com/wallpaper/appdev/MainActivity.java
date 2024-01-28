@@ -72,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         setSideNavigationMenu();
         findViews();
-        CheckForAppUpdate();
+     //   CheckForAppUpdate();
         urlsArray = new ArrayList<>();
         recyclerView = findViewById(R.id.recyclerView);
         imageList = new ArrayList<>();
@@ -194,7 +194,7 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     runOnUiThread(() -> Toast.makeText(MainActivity.this, "No wallpapers found", Toast.LENGTH_SHORT).show());
                 }
-                Collections.shuffle(imageList);
+               // Collections.shuffle(imageList);
 
 
             } catch (IOException | JSONException e) {
